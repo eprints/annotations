@@ -1,0 +1,42 @@
+use EPrints;
+use strict;
+
+my $session = EPrints::Session->new();
+my $content = "text/json";
+$session->send_http_header( content_type=>$content );
+
+my $id = $session->param( "id" );
+
+if( !( $session->current_user && $session->current_user->value("usertype") =~ /^(admin|local_admin)$/ ) )
+{
+  print '[{ error: "You must be logged in as an admin to view this page" }]';
+print STDERR "no user\n";
+  $session->terminate;
+  exit( 0 );
+}
+
+if( !$id )
+{
+  print '[{ error: "No id supplied, eg 42" }]';
+  $session->terminate;
+print STDERR "no id\n";
+  exit( 0 );
+}
+
+my $dataset = $session->dataset( "anno" );
+my $dataobj = $dataset->get_object( $session, $id );
+
+if( !$dataobj )
+{
+  print '[{ error: "Could not find $id" }]';
+  $session->terminate;
+print STDERR "no dataobj $id\n";
+  exit( 0 );
+}
+
+my $ok = $dataobj->remove();
+
+print '[]';
+
+$session->terminate();
+

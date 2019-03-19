@@ -1,0 +1,132 @@
+use EPrints;
+use JSON;
+use strict;
+
+my $session = EPrints::Session->new();
+my $content = "application/json";
+$session->send_http_header( content_type=>$content );
+
+my $record = $session->param( "record" );
+my $key = $session->param( "key" );
+my $note = $session->param( "note" );
+my $type = $session->param( "type" );
+my $verb = $session->param( "verb" );
+my $security = $session->param( "security" );
+my $id = $session->param( "id" ); # only valid when updating existing
+my $inreplyto = $session->param( "inreplyto" ); # just for threaded, need a better way to do this
+my $subject = $session->param( "subject" );
+my $file = $session->param( "file" );
+my $offset = $session->param( "offset" );
+
+#if( !( $session->current_user && $session->current_user->value("usertype") =~ /^(admin|local_admin)$/ ) )
+#{
+#  print '[{ status: "fail", error: "You must be logged in as an admin to view this page" }]';
+#  $session->terminate;
+#  exit( 0 );
+#}
+
+if( !$session->current_user )
+{
+  print '[{ status: "fail", error: "You must be logged in to use this page" }]';
+  $session->terminate;
+  exit( 0 );
+}
+
+my $user = $session->current_user;
+my $userid = $user->get_value("userid");
+
+if( !$record || !$key || !$note )
+{
+  print '[{ error: "Incorrect parameters" }]';
+  $session->terminate;
+  exit( 0 );
+}
+
+if( !$type || $type !~ /^(simple|provenance|url|threaded)$/ )
+{
+  $type = "simple";
+}
+
+if( !$verb || $verb !~ /^(edit|create)$/ )
+{
+  $verb = "edit";
+}
+
+if( !$security || $security !~ /^(public|user|private)$/ ) # need to pin down these values
+{
+  $security = "public";
+}
+
+if( !$inreplyto ) { $inreplyto = '' }
+
+print STDERR "anno put record[$record] key[$key] type[$type] verb[$verb] note[$note] security[$security] subject[$subject] offset[$offset]\n";
+
+my $dataset = $session->dataset( "anno" );
+
+my $searchexp = new EPrints::Search( session=>$session, dataset=>$dataset );
+$searchexp->add_field( $dataset->get_field( "record" ), $record, "EQ" );
+$searchexp->add_field( $dataset->get_field( "key" ), $key, "EQ" );
+$searchexp->add_field( $dataset->get_field( "annoid" ), $id, "EQ" ) if $id;
+my $list = $searchexp->perform_search;
+my $obj;
+
+sub set_default_info($)
+{
+  my ( $i ) = @_;
+
+  $i->{"userid"} = $userid;
+  $i->{"username"} = EPrints::Utils::make_name_string( $session->current_user->get_value("name"), 1 );
+  $i->{"timestamp"} = time;
+  $i->{"time"} = EPrints::Time::human_time();
+  $i->{"inreplyto"} = $inreplyto if $inreplyto;
+  $i->{"subject"} = $subject if $subject;
+  $i->{"offset"} = $offset if $offset;
+  $i->{"file"} = $file if $file;
+  return $i;
+}
+
+if( $verb eq "edit" && $list->count() )
+{
+  $obj = $list->item(0);
+  $obj->set_value( "note", $note );
+
+  # get existing info, merge in the default values for timestamp etc, then update 
+  my $info;
+  $info = decode_json $obj->get_value( "info" ) if $obj->get_value( "info" );
+
+  # in order to edit an existing record we much be the owner or an admin
+  if( $info->{userid} == $userid || $user->value("usertype") =~ /^(admin|local_admin)$/ )
+  {
+    $info = set_default_info( $info );
+    $obj->set_value( "info", encode_json $info );
+    $obj->commit();
+  }
+  else
+  {
+    print STDERR "not updating due to security constraints\n";
+  }
+}
+else
+{
+  my $info;
+  $info = set_default_info( $info );
+
+  $obj = $dataset->dataobj_class->create_anno( $session,
+  {
+    record => $record,
+    key => $key,
+    note => $note,
+    type => $type,
+    info => encode_json $info,
+    security => $security,
+  } );
+}
+
+if( $obj ) # export the new or updated record
+{
+  my $plugin = $session->plugin( "Export::JSON" );
+  my $output_list = EPrints::List->new( repository => $session, dataset => $dataset, ids => [ $obj->get_id ] );
+  $plugin->output_list( list=>$output_list, fh=>*STDOUT );
+}
+
+$session->terminate();

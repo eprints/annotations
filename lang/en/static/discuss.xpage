@@ -1,0 +1,14 @@
+<?xml version="1.0" standalone="no" ?>
+<!DOCTYPE page SYSTEM "entities.dtd" >
+<xpage:page xmlns="http://www.w3.org/1999/xhtml" xmlns:xpage="http://eprints.org/ep3/xpage" xmlns:epc="http://eprints.org/ep3/control">
+<xpage:title>Discuss</xpage:title>
+<xpage:body>
+
+<div class="anno_discuss" id="anno_discuss"></div>
+<script>
+  // Takes a record name, which should be a unique string, eg the url of the page. And the ID of the element to house the discussion
+  anno_init_discuss( "/discuss.html", "#anno_discuss" );
+</script>
+
+</xpage:body>
+</xpage:page>

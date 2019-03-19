@@ -1,0 +1,45 @@
+.ui-dialog-titlebar,
+.ui-widget-header
+{
+  background-color: #204f76 !important; /* eprints dark blue */
+  color: white;
+}
+.ui-dialog-titlebar .ui-icon-closethick
+{
+  background-position: -64px -144px; /* swap cross for tick */
+  background-image: url("images/ui-icons_777777_256x240.png");
+}
+.ui-dialog, .ui-dialog-content
+{
+  padding: 4px 4px 4px 4px !important;
+}
+/*
+.ui-dialog-content textarea
+{
+  padding: 2px 2px 2px 2px !important;
+}
+*/
+
+/* might just be fighting with local branding rather than jquery ui defaults */
+.ui-dialog.ui-widget.ui-widget-content .ui-dialog-content
+{
+  padding: 10px !important;
+}
+.ui-dialog.ui-widget.ui-widget-content
+{
+  width: 500px !important;
+}
+
+.anno_dialog textarea
+{
+  width: 100%;
+  padding: 0;
+  margin: 0;
+}
+
+.anno_highlight,
+.anno_highlight:hover
+{
+  background-color: rgba(255, 245, 104, 0.88); /* a shade of yellow */
+}
+

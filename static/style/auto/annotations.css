@@ -1,0 +1,102 @@
+.ep_anno_popup_link
+{
+  font-size: 90%;
+  float: right;
+
+  margin-top: -20px; /* for now */
+  margin-right: 5px;
+}
+
+.ep_anno_page_popup_link
+{
+  position: fixed;
+  left: 5px;
+  top: 5px;
+}
+
+.anno_discuss
+{
+  width: 750px;
+  border: 1px solid #dddddd;
+  padding: 10px;
+  margin: 0 auto;
+  box-shadow: 0 2px 6px rgba(100, 100, 100, 0.3);
+  white-space: pre-wrap;
+}
+
+.ep_anno_discuss
+{
+  border: 1px solid #dddddd;
+  margin-top: 10px;
+  margin-bottom: 0px;
+  padding: 5px;
+  box-shadow: 0 1px 3px rgba(100, 100, 100, 0.3);
+  white-space: pre-wrap;
+}
+
+.ep_anno_control
+{
+  text-align: right;
+}
+
+.ep_anno_discuss:hover
+{
+  border-color: #555555;
+}
+
+.ep_discussion_message
+{
+  font-style: italic;
+}
+
+/* experimental */
+
+/*
+.ep_anno_discuss
+{
+  border-left: 3px solid #cccccc;
+  border-right: 3px solid #cccccc;
+}
+.ep_anno_discuss .ep_anno_discuss
+{
+  border-left: 3px solid #ccffcc;
+  border-right: 3px solid #ccffcc;
+}
+.ep_anno_discuss .ep_anno_discuss .ep_anno_discuss
+{
+  border-left: 3px solid #ccccff;
+  border-right: 3px solid #ccccff;
+}
+.ep_anno_discuss .ep_anno_discuss .ep_anno_discuss
+{
+  border-left: 3px solid #ccccff;
+  border-right: 3px solid #ccccff;
+}
+.ep_anno_discuss .ep_anno_discuss .ep_anno_discuss .ep_anno_discuss
+{
+  border-left: 3px solid #ffcccc;
+  border-right: 3px solid #ffcccc;
+}
+*/
+ 
+.ep_anno_discuss .ep_anno_discuss
+{
+  border-color: #ccffcc;
+}
+.ep_anno_discuss .ep_anno_discuss .ep_anno_discuss
+{
+  border-color: #ccccff;
+}
+.ep_anno_discuss .ep_anno_discuss .ep_anno_discuss .ep_anno_discuss
+{
+  border-color: #ffcccc;
+}
+
+.ep_anno_discuss:hover,
+.ep_anno_discuss .ep_anno_discuss:hover,
+.ep_anno_discuss .ep_anno_discuss .ep_anno_discuss:hover,
+.ep_anno_discuss .ep_anno_discuss .ep_anno_discuss .ep_anno_discuss:hover
+{
+  border-color: #555555;
+  background-color: #fcfcfc;
+}

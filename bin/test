@@ -1,0 +1,22 @@
+#!/usr/bin/perl -I /opt/eprints3/perl_lib
+
+use EPrints;
+use strict;
+
+my $repoid = $ARGV[0];
+my $record = $ARGV[1];
+
+my $session = new EPrints::Session( 1 , $repoid, 1 );
+die( "Failed to load repository: $repoid\n" ) unless $session;
+die( "No record spec supplied, eg eprint/1\n" ) unless $record;
+
+my $ds = $session->dataset( "anno" );
+my $searchexp = new EPrints::Search( session=>$session, dataset=>$ds );
+$searchexp->add_field( $ds->get_field( "record" ), $record, "EQ" );
+my $list = $searchexp->perform_search;
+
+my $plugin = $session->plugin( "Export::JSON" );
+$plugin->initialise_fh( \*STDOUT );
+$plugin->output_list( list=>$list, fh=>*STDOUT );
+
+$session->terminate();

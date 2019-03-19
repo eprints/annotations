@@ -1,0 +1,80 @@
+use EPrints;
+use strict;
+
+my $session = EPrints::Session->new();
+my $content = "text/json";
+$session->send_http_header( content_type=>$content );
+
+my $record = $session->param( "record" );
+my $type = $session->param( "type" );
+my $security = $session->param( "security" );
+my $userid = undef;
+my $format = $session->param( "format" );
+
+if( !$format || $format !~ /^(json|csv)$/ )
+{
+  $format = "json";
+}
+$format = uc $format;
+
+if( !$record )
+{
+  print '[{ error: "No record spec supplied, eg eprint/1" }]';
+  $session->terminate;
+  exit( 0 );
+}
+
+# if there is no user, then force $security to be public
+# if the user is an admin, then allow any search
+# if there is a non-admin user, then $security can be public or private+$userid of current user
+
+if( $session->current_user )
+{
+  my $user = $session->current_user;
+  if( $user->value("usertype") =~ /^(admin|local_admin)$/ )
+  {
+    # admin
+  }
+  else
+  {
+    # user
+    $userid = $user->get_id;
+    $security = "public"; # for now
+
+#    if( $security eq "private" )
+#    {
+#      $userid = $user->get_id;
+#    }
+#    else
+#    {
+#      $security = "public"; # for now
+#    }
+  }
+}
+else
+{
+  $security = "public";
+}
+
+print STDERR "anno get record[$record] type[$type] userid[$userid] security[$security]\n";
+
+my $ds = $session->dataset( "anno" );
+my $searchexp = new EPrints::Search( session=>$session, dataset=>$ds );
+$searchexp->add_field( $ds->get_field( "record" ), $record, "EQ" );
+$searchexp->add_field( $ds->get_field( "type" ), $type, "EQ" ) if $type;
+$searchexp->add_field( $ds->get_field( "security" ), $security, "EQ" ) if $security;
+# $searchexp->add_field( $ds->get_field( "userid" ), $userid, "EQ" ) if $userid; # is part of info
+my $list = $searchexp->perform_search;
+
+#$list->map( sub {
+#  my( $session, $dataset, $anno ) = @_;
+#  print "hello\n";
+#  $anno->set_value("key","bar");
+#});
+
+my $plugin = $session->plugin( "Export::$format" );
+$plugin->initialise_fh( \*STDOUT );
+$plugin->output_list( list=>$list, fh=>*STDOUT );
+
+$session->terminate();
+
